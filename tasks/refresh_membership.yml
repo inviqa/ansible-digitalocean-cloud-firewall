@@ -1,0 +1,58 @@
+---
+- name: Refresh DigitalOcean Cloud Firewall after membership update
+  ansible.builtin.uri:
+    url: >-
+      {{ digitalocean_cloud_firewall_api_base_url }}/firewalls/{{
+      digitalocean_cloud_firewall_resource.id }}
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ digitalocean_cloud_firewall_api_token }}"
+    body_format: json
+    method: GET
+    status_code:
+      - 200
+    follow_redirects: all
+    return_content: true
+    timeout: "{{ digitalocean_cloud_firewall_timeout }}"
+  delegate_to: localhost
+  register: digitalocean_cloud_firewall_get_response
+  changed_when: false
+  until: >-
+    (
+      digitalocean_cloud_firewall_state == 'present'
+      and
+      digitalocean_cloud_firewall_droplet_id | string in
+      (
+        digitalocean_cloud_firewall_get_response.json.firewall.droplet_ids
+        | default([])
+        | map('string')
+        | list
+      )
+    )
+    or
+    (
+      digitalocean_cloud_firewall_state == 'absent'
+      and
+      digitalocean_cloud_firewall_droplet_id | string not in
+      (
+        digitalocean_cloud_firewall_get_response.json.firewall.droplet_ids
+        | default([])
+        | map('string')
+        | list
+      )
+    )
+  retries: 6
+  delay: 5
+  no_log: true
+
+- name: Store refreshed DigitalOcean Cloud Firewall droplet membership
+  ansible.builtin.set_fact:
+    digitalocean_cloud_firewall_resource: >-
+      {{ digitalocean_cloud_firewall_get_response.json.firewall }}
+    digitalocean_cloud_firewall_droplet_ids: >-
+      {{
+        digitalocean_cloud_firewall_get_response.json.firewall.droplet_ids
+        | default([])
+        | map('string')
+        | list
+      }}

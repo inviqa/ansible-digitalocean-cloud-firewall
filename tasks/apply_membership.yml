@@ -1,0 +1,60 @@
+---
+- name: Attach Droplet to DigitalOcean Cloud Firewall
+  ansible.builtin.uri:
+    url: >-
+      {{ digitalocean_cloud_firewall_api_base_url }}/firewalls/{{
+      digitalocean_cloud_firewall_resource.id }}/droplets
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ digitalocean_cloud_firewall_api_token }}"
+    body_format: json
+    body:
+      droplet_ids:
+        - "{{ digitalocean_cloud_firewall_droplet_id | int }}"
+    method: POST
+    status_code:
+      - 200
+      - 202
+      - 204
+    follow_redirects: all
+    return_content: true
+    timeout: "{{ digitalocean_cloud_firewall_timeout }}"
+  delegate_to: localhost
+  register: digitalocean_cloud_firewall_attach_response
+  changed_when: true
+  no_log: true
+  when:
+    - digitalocean_cloud_firewall_state == 'present'
+    - >-
+      digitalocean_cloud_firewall_droplet_id
+      | string not in digitalocean_cloud_firewall_droplet_ids
+
+- name: Detach Droplet from DigitalOcean Cloud Firewall
+  ansible.builtin.uri:
+    url: >-
+      {{ digitalocean_cloud_firewall_api_base_url }}/firewalls/{{
+      digitalocean_cloud_firewall_resource.id }}/droplets
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ digitalocean_cloud_firewall_api_token }}"
+    body_format: json
+    body:
+      droplet_ids:
+        - "{{ digitalocean_cloud_firewall_droplet_id | int }}"
+    method: DELETE
+    status_code:
+      - 200
+      - 202
+      - 204
+    follow_redirects: all
+    return_content: true
+    timeout: "{{ digitalocean_cloud_firewall_timeout }}"
+  delegate_to: localhost
+  register: digitalocean_cloud_firewall_detach_response
+  changed_when: true
+  no_log: true
+  when:
+    - digitalocean_cloud_firewall_state == 'absent'
+    - >-
+      digitalocean_cloud_firewall_droplet_id
+      | string in digitalocean_cloud_firewall_droplet_ids

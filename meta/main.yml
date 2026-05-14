@@ -1,0 +1,30 @@
+---
+galaxy_info:
+  author: "Marco Massari Calderone <marco.massari-calder@inviqa.com>"
+  namespace: "inviqa"
+  role_name: "digitalocean_cloud_firewall"
+  description: >-
+    Attach or detach a DigitalOcean Droplet to an existing Cloud Firewall
+  company: "Inviqa UK Ltd"
+  license: MIT
+  min_ansible_version: "2.13"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+    - name: EL
+      versions:
+        - all
+  galaxy_tags:
+    - digitalocean
+    - firewall
+    - networking
+    - cloud
+    - infrastructure
+
+dependencies: []

@@ -1,0 +1,78 @@
+---
+- name: Clean up DigitalOcean Cloud Firewall live test resources
+  hosts: digitalocean_cloud_firewall
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    ansible_connection: local
+    digitalocean_cloud_firewall_api_base_url: >-
+      https://api.digitalocean.com/v2
+    digitalocean_cloud_firewall_test_api_token_from_env: >-
+      {{
+        lookup('env', 'DIGITAL_OCEAN_API_TOKEN')
+        | default(lookup('env', 'DO_OAUTH_TOKEN'), true)
+      }}
+    digitalocean_cloud_firewall_test_effective_api_token: >-
+      {{
+        digitalocean_cloud_firewall_test_api_token_from_env
+        | default(
+            digitalocean_cloud_firewall_test_api_token | default('', true),
+            true
+          )
+      }}
+    digitalocean_cloud_firewall_test_region_id: "lon1"
+    digitalocean_cloud_firewall_test_tag: "ANSIBLE-TEST"
+    digitalocean_cloud_firewall_test_resource_name: >-
+      ansible-digitalocean-cloud-firewall-{{ inventory_hostname }}
+    digitalocean_cloud_firewall_test_resource_names:
+      - "{{ digitalocean_cloud_firewall_test_resource_name }}"
+  pre_tasks:
+    - name: Check whether local test overrides exist
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/test_variables.yml"
+      register: digitalocean_cloud_firewall_test_variables_file
+
+    - name: Load local test overrides
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/test_variables.yml"
+      when: digitalocean_cloud_firewall_test_variables_file.stat.exists
+
+    - name: Check whether a DigitalOcean API token is available for cleanup
+      ansible.builtin.assert:
+        that:
+          - digitalocean_cloud_firewall_test_effective_api_token | length > 0
+        fail_msg: >-
+          Set digitalocean_cloud_firewall_test_api_token in
+          tests/test_variables.yml or export DIGITAL_OCEAN_API_TOKEN or
+          DO_OAUTH_TOKEN before running the cleanup playbook.
+
+    - name: Validate the DigitalOcean API token for cleanup
+      ansible.builtin.uri:
+        url: https://api.digitalocean.com/v2/account
+        headers:
+          Content-Type: application/json
+          Authorization: >-
+            Bearer {{ digitalocean_cloud_firewall_test_effective_api_token }}
+        method: GET
+        status_code:
+          - 200
+          - 401
+        return_content: true
+        timeout: 60
+      delegate_to: localhost
+      register: digitalocean_cloud_firewall_test_account_auth_check
+      no_log: true
+      failed_when: false
+
+    - name: Check whether the DigitalOcean API token can authenticate cleanup
+      ansible.builtin.assert:
+        that:
+          - digitalocean_cloud_firewall_test_account_auth_check.status == 200
+        fail_msg: >-
+          The configured DigitalOcean token could not authenticate against the
+          DigitalOcean API. Update digitalocean_cloud_firewall_test_api_token
+          in tests/test_variables.yml or export a valid DIGITAL_OCEAN_API_TOKEN
+          / DO_OAUTH_TOKEN before running the cleanup playbook.
+  tasks:
+    - name: Delete test resources
+      ansible.builtin.include_tasks: tasks/delete_test_resources.yml

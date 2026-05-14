@@ -1,0 +1,7 @@
+# Local live-test overrides; keep untracked to avoid accidental commits.
+test_variables.yml
+.vagrant
+.DS_Store
+.galaxy
+*.retry
+.vault_password

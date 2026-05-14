@@ -1,0 +1,2 @@
+[digitalocean_cloud_firewall]
+default do_image_id=ubuntu-24-04-x64

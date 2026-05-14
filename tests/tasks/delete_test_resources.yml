@@ -1,0 +1,77 @@
+---
+- name: Retrieve test Cloud Firewalls
+  digitalocean.cloud.firewalls_info:
+    token: "{{ digitalocean_cloud_firewall_test_effective_api_token }}"
+  delegate_to: localhost
+  register: digitalocean_cloud_firewall_test_firewalls
+  no_log: true
+
+- name: Collect matching test Cloud Firewall names
+  ansible.builtin.set_fact:
+    digitalocean_cloud_firewall_test_firewall_names_to_delete: >-
+      {{
+        digitalocean_cloud_firewall_test_firewall_names_to_delete | default([])
+        + [item.name]
+      }}
+  loop: >-
+    {{ digitalocean_cloud_firewall_test_firewalls.firewalls | default([]) }}
+  when:
+    - item.name in digitalocean_cloud_firewall_test_resource_names
+  delegate_to: localhost
+  no_log: true
+
+- name: Delete matching test Cloud Firewalls
+  digitalocean.cloud.firewall:
+    token: "{{ digitalocean_cloud_firewall_test_effective_api_token }}"
+    name: "{{ item }}"
+    state: absent
+    timeout: 60
+  delegate_to: localhost
+  loop: >-
+    {{
+      digitalocean_cloud_firewall_test_firewall_names_to_delete | default([])
+    }}
+  no_log: true
+
+- name: Retrieve test Droplets
+  digitalocean.cloud.droplets_info:
+    token: "{{ digitalocean_cloud_firewall_test_effective_api_token }}"
+    tag_name: "{{ digitalocean_cloud_firewall_test_tag }}"
+  delegate_to: localhost
+  register: digitalocean_cloud_firewall_test_droplets
+  no_log: true
+
+- name: Collect matching test Droplets
+  ansible.builtin.set_fact:
+    digitalocean_cloud_firewall_test_droplets_to_delete: >-
+      {{
+        digitalocean_cloud_firewall_test_droplets_to_delete | default([])
+        + [{
+          'id': item.id,
+          'name': item.name,
+          'region': (
+            item.region.slug
+            | default(digitalocean_cloud_firewall_test_region_id)
+          ),
+        }]
+      }}
+  loop: >-
+    {{ digitalocean_cloud_firewall_test_droplets.droplets | default([]) }}
+  when:
+    - item.name in digitalocean_cloud_firewall_test_resource_names
+  delegate_to: localhost
+  no_log: true
+
+- name: Delete matching test Droplets
+  digitalocean.cloud.droplet:
+    token: "{{ digitalocean_cloud_firewall_test_effective_api_token }}"
+    droplet_id: "{{ item.id }}"
+    name: "{{ item.name }}"
+    region: "{{ item.region }}"
+    state: absent
+    timeout: 60
+  delegate_to: localhost
+  register: digitalocean_cloud_firewall_test_droplet_delete
+  loop: >-
+    {{ digitalocean_cloud_firewall_test_droplets_to_delete | default([]) }}
+  no_log: true

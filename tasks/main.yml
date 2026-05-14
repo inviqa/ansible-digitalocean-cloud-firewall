@@ -1,0 +1,15 @@
+---
+- name: Validate DigitalOcean Cloud Firewall inputs
+  ansible.builtin.import_tasks: validate.yml
+
+- name: Resolve DigitalOcean Cloud Firewall metadata
+  ansible.builtin.import_tasks: resolve_firewall.yml
+
+- name: Apply DigitalOcean Cloud Firewall membership
+  ansible.builtin.import_tasks: apply_membership.yml
+
+- name: Refresh DigitalOcean Cloud Firewall membership
+  ansible.builtin.import_tasks: refresh_membership.yml
+
+- name: Verify DigitalOcean Cloud Firewall membership
+  ansible.builtin.import_tasks: verify_membership.yml

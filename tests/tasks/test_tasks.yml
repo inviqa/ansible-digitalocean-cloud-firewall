@@ -1,0 +1,39 @@
+---
+- name: Retrieve the test Cloud Firewall
+  ansible.builtin.uri:
+    url: >-
+      {{ digitalocean_cloud_firewall_api_base_url }}/firewalls/{{
+      digitalocean_cloud_firewall_test_firewall.id }}
+    headers:
+      Content-Type: application/json
+      Authorization: >-
+        Bearer {{ digitalocean_cloud_firewall_test_effective_api_token }}
+    method: GET
+    status_code:
+      - 200
+    return_content: true
+    timeout: 60
+  delegate_to: localhost
+  register: digitalocean_cloud_firewall_test_firewall_lookup
+  no_log: true
+
+- name: Store test Cloud Firewall membership
+  ansible.builtin.set_fact:
+    digitalocean_cloud_firewall_test_firewall_droplet_ids: >-
+      {{
+        digitalocean_cloud_firewall_test_firewall_lookup.json.firewall.droplet_ids
+        | default([])
+        | map('string')
+        | list
+      }}
+
+- name: Verify the Droplet is attached to the test Cloud Firewall
+  ansible.builtin.assert:
+    that:
+      - >-
+        digitalocean_cloud_firewall_test_droplet_id
+        | string in digitalocean_cloud_firewall_test_firewall_droplet_ids
+    fail_msg: >-
+      Droplet {{ digitalocean_cloud_firewall_test_droplet_id }} is not
+      attached to Cloud Firewall
+      {{ digitalocean_cloud_firewall_test_firewall.name }}.

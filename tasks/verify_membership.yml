@@ -1,0 +1,24 @@
+---
+- name: Verify Droplet is attached to DigitalOcean Cloud Firewall
+  ansible.builtin.assert:
+    that:
+      - >-
+        digitalocean_cloud_firewall_droplet_id
+        | string in digitalocean_cloud_firewall_droplet_ids
+    fail_msg: >-
+      Droplet {{ digitalocean_cloud_firewall_droplet_id }} is not attached to
+      DigitalOcean Cloud Firewall
+      {{ digitalocean_cloud_firewall_resource.name }}.
+  when: digitalocean_cloud_firewall_state == 'present'
+
+- name: Verify Droplet is detached from DigitalOcean Cloud Firewall
+  ansible.builtin.assert:
+    that:
+      - >-
+        digitalocean_cloud_firewall_droplet_id
+        | string not in digitalocean_cloud_firewall_droplet_ids
+    fail_msg: >-
+      Droplet {{ digitalocean_cloud_firewall_droplet_id }} is still attached
+      to DigitalOcean Cloud Firewall
+      {{ digitalocean_cloud_firewall_resource.name }}.
+  when: digitalocean_cloud_firewall_state == 'absent'

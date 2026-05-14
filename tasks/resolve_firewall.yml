@@ -1,0 +1,66 @@
+---
+- name: List DigitalOcean Cloud Firewalls
+  ansible.builtin.uri:
+    url: "{{ digitalocean_cloud_firewall_api_base_url }}/firewalls"
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ digitalocean_cloud_firewall_api_token }}"
+    body_format: json
+    method: GET
+    status_code:
+      - 200
+    follow_redirects: all
+    return_content: true
+    timeout: "{{ digitalocean_cloud_firewall_timeout }}"
+  delegate_to: localhost
+  register: digitalocean_cloud_firewall_list_response
+  changed_when: false
+  no_log: true
+
+- name: Resolve DigitalOcean Cloud Firewall by ID or name
+  ansible.builtin.set_fact:
+    digitalocean_cloud_firewall_matches: >-
+      {{
+        digitalocean_cloud_firewall_list_response.json.firewalls
+        | default([])
+        | selectattr(
+            'id',
+            'equalto',
+            digitalocean_cloud_firewall_id
+          )
+        | list
+        if digitalocean_cloud_firewall_id | length > 0
+        else
+        digitalocean_cloud_firewall_list_response.json.firewalls
+        | default([])
+        | selectattr(
+            'name',
+            'equalto',
+            digitalocean_cloud_firewall_name
+          )
+        | list
+      }}
+
+- name: Validate DigitalOcean Cloud Firewall lookup
+  ansible.builtin.assert:
+    that:
+      - digitalocean_cloud_firewall_matches | length == 1
+    fail_msg: >-
+      Expected exactly one DigitalOcean Cloud Firewall matching
+      {{
+        digitalocean_cloud_firewall_id
+        if digitalocean_cloud_firewall_id | length > 0
+        else digitalocean_cloud_firewall_name
+      }}.
+
+- name: Store DigitalOcean Cloud Firewall metadata
+  ansible.builtin.set_fact:
+    digitalocean_cloud_firewall_resource: >-
+      {{ digitalocean_cloud_firewall_matches | first }}
+    digitalocean_cloud_firewall_droplet_ids: >-
+      {{
+        (digitalocean_cloud_firewall_matches | first).droplet_ids
+        | default([])
+        | map('string')
+        | list
+      }}

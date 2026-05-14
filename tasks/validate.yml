@@ -1,0 +1,20 @@
+---
+- name: Validate DigitalOcean Cloud Firewall state
+  ansible.builtin.assert:
+    that:
+      - digitalocean_cloud_firewall_state in ['present', 'absent']
+    fail_msg: "digitalocean_cloud_firewall_state must be present or absent."
+
+- name: Validate DigitalOcean Cloud Firewall inputs
+  ansible.builtin.assert:
+    that:
+      - digitalocean_cloud_firewall_api_token | length > 0
+      - digitalocean_cloud_firewall_droplet_id | string | length > 0
+      - >-
+        digitalocean_cloud_firewall_id | length > 0
+        or digitalocean_cloud_firewall_name | length > 0
+    fail_msg: >-
+      digitalocean_cloud_firewall_api_token,
+      digitalocean_cloud_firewall_droplet_id, and either
+      digitalocean_cloud_firewall_id or digitalocean_cloud_firewall_name are
+      required.
