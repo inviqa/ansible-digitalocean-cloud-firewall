@@ -12,6 +12,8 @@ Cloud Firewall.
 - [Examples](#examples)
 - [Testing](#testing)
 - [Development notes](#development-notes)
+- [Continuous integration](#continuous-integration)
+- [Repository guidance](#repository-guidance)
 - [Maintainer](#maintainer)
 - [Support](#support)
 - [License](#license)
@@ -114,6 +116,23 @@ independent from the checkout directory name.
   inventory or group variables.
 - If the role is published later, the intended Galaxy FQCN from current
   metadata is `inviqa.digitalocean_cloud_firewall`.
+
+## Continuous integration
+
+- `Jenkinsfile` defines the private Jenkins CI entrypoint for this role.
+- The Jenkins pipeline installs Ansible dependencies, runs syntax checks, and
+  can run the live DigitalOcean test harness with cleanup.
+- Jenkins requires the `digitalocean-ansible-roles-oauth-token` credential for
+  live tests and `inviqa-slack-integration-token` for failure notifications.
+
+## Repository guidance
+
+- `AGENTS.md` defines repository-specific editing, linting, and documentation
+  expectations for AI coding agents working in this role.
+- `.ansible/` is treated as generated or vendored content and should not be
+  edited directly.
+- `tests/test_variables.yml` is a local secret-bearing override file and must
+  stay untracked.
 
 ## Maintainer
 

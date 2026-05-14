@@ -25,3 +25,9 @@ All notable changes to this project will be documented in this file.
 - Standalone live DigitalOcean test harness that creates temporary resources,
   validates attach and detach behavior, and provides a cleanup playbook.
 - Role-local lint configuration for YAML and Ansible validation.
+- MIT license file.
+- Jenkins CI pipeline for dependency installation, syntax checks, optional live
+  DigitalOcean tests, cleanup, and Slack failure notification, using the shared
+  `digitalocean-ansible-roles-oauth-token` credential.
+- Repository-specific `AGENTS.md` guidance for linting, documentation,
+  changelog, and live-test handling.
