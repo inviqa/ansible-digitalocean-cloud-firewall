@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file.
 - Workspace-managed local command surface for role linting, Ansible syntax checks, live
   DigitalOcean tests, Jenkinsfile linting, GitHub release checks, GitHub
   publication, Ansible Galaxy token checks, Galaxy status, and Galaxy import.
+- Jenkins live tests assign created DigitalOcean Droplets to the
+  `Inviqa Sandbox` project through the top-level pipeline environment.
 - Namespaced Ansible helper commands under `ws ansible lint`,
   `ws ansible syntax`, `ws ansible playbook`, and
   `ws ansible galaxy <action>` subcommands, with grouped Workspace usage help
