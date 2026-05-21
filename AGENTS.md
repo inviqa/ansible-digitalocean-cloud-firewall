@@ -22,6 +22,9 @@ the repository root and is mandatory for agents editing this role.
 - This Cloud Firewall harness uses only the DigitalOcean API. It does not SSH
   into test Droplets, so do not add SSH key or SSH agent requirements unless the
   live test starts making SSH connections.
+- The live test may inject a DigitalOcean public SSH key selector into the
+  temporary Droplet only to suppress root password emails. Do not add private
+  key forwarding, SSH agent forwarding, or SSH connectivity checks for this.
 
 ## Required Checks
 

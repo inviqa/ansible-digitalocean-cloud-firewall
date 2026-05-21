@@ -3,6 +3,7 @@
 # The override file is gitignored.
 
 attribute('test.digitalocean.api_token'): ''
+attribute('test.digitalocean.ssh_keys'): []
 attribute('test.digitalocean.project_name'): ''
 attribute('ansible.galaxy.token'): ''
 attribute('github.api_token'): ''

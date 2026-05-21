@@ -52,6 +52,7 @@ Set the Workspace attributes needed for the commands you plan to run:
 | Attribute | Used by | Purpose |
 | --- | --- | --- |
 | `test.digitalocean.api_token` | Live tests | DigitalOcean API token used to create and delete the temporary Droplet and Cloud Firewall. |
+| `test.digitalocean.ssh_keys` | Live tests | Optional DigitalOcean SSH key selectors injected into the temporary Droplet to suppress root password email. |
 | `test.digitalocean.project_name` | Live tests | Optional DigitalOcean project name for assigning the temporary Droplet. |
 | `ansible.galaxy.token` | Release commands | Ansible Galaxy API token used by token-required Galaxy checks, status, and import commands. |
 | `github.api_token` | Release commands | GitHub API token used by GitHub release checks and publication commands. |
@@ -60,6 +61,7 @@ For example:
 
 ```ruby
 attribute('test.digitalocean.api_token'): 'dop_v1_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+attribute('test.digitalocean.ssh_keys'): []
 attribute('test.digitalocean.project_name'): ''
 attribute('ansible.galaxy.token'): 'your-galaxy-token'
 attribute('github.api_token'): 'your-github-token'
@@ -73,6 +75,11 @@ local configuration surface.
 Set `test.digitalocean.project_name` only when the temporary test Droplet should
 be assigned to an existing DigitalOcean project.
 
+Set `test.digitalocean.ssh_keys` when the temporary Droplet should receive one
+or more DigitalOcean public SSH keys. The Cloud Firewall tests do not connect
+over SSH, so this does not require private key or SSH agent forwarding; it only
+prevents DigitalOcean from sending a temporary root password email.
+
 For direct Ansible runs without Workspace, create the gitignored test variable
 file instead:
 
@@ -82,18 +89,22 @@ cp tests/test_variables.example.yml tests/test_variables.yml
 
 ```yaml
 digitalocean_cloud_firewall_test_api_token: "dop_v1_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# digitalocean_cloud_firewall_test_ssh_keys:
+#   - "12345678"
 # digitalocean_cloud_firewall_test_project_name: "existing-project-name"
 ```
 
 For Workspace commands, `workspace.override.yml` values take precedence over
 shell exports. If the Workspace attribute is blank, `DIGITAL_OCEAN_API_TOKEN`,
-`DO_OAUTH_TOKEN`, or `DIGITAL_OCEAN_PROJECT_NAME` from the shell can provide
-the value instead. The live playbook then prefers those environment values over
+`DO_OAUTH_TOKEN`, `DIGITAL_OCEAN_SSH_KEYS`, or
+`DIGITAL_OCEAN_PROJECT_NAME` from the shell can provide the value instead. The
+live playbook then prefers those environment values over
 `tests/test_variables.yml`.
 
 For direct Ansible runs without Workspace, `DIGITAL_OCEAN_API_TOKEN`,
-`DO_OAUTH_TOKEN`, and `DIGITAL_OCEAN_PROJECT_NAME` from the shell take
-precedence over `tests/test_variables.yml`.
+`DO_OAUTH_TOKEN`, `DIGITAL_OCEAN_SSH_KEYS`, and
+`DIGITAL_OCEAN_PROJECT_NAME` from the shell take precedence over
+`tests/test_variables.yml`.
 
 ## Workspace Commands
 

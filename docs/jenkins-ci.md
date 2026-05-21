@@ -117,6 +117,7 @@ Recommended Jenkins configuration:
   - Workspace CLI `ws`
 - Required Jenkins credentials:
   - DigitalOcean API token
+  - DigitalOcean SSH key selector used to suppress Droplet password emails
   - Slack token credential used for failure notifications
   - GitHub API token with write access to
     `inviqa/ansible-digitalocean-cloud-firewall`
@@ -132,6 +133,7 @@ defined at the top of `Jenkinsfile`:
 | `ansible-roles-galaxy-token` | Secret text | Ansible Galaxy API token used to import the role after the GitHub release exists. |
 | `ansible-roles-digitalocean-oauth-token` | Secret text | Shared DigitalOcean API token for Ansible role live tests. |
 | `DIGITAL_OCEAN_PROJECT_NAME` | Literal environment value | DigitalOcean project name, `Inviqa Sandbox`, used to assign live-test Droplets. |
+| `ansible-roles-tests-digitalocean-ssh-key-id` | Secret text | DigitalOcean SSH key ID injected into live-test Droplets to suppress root password emails. |
 | `inviqa-slack-integration-token` | Secret text | Slack token used for Jenkins failure notifications. |
 
 ## Jenkins Parameters

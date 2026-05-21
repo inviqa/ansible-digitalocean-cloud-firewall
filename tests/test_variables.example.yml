@@ -7,5 +7,7 @@ digitalocean_cloud_firewall_test_api_token: "your_digitalocean_token_here"
 # Optional overrides:
 # digitalocean_cloud_firewall_test_region_id: "lon1"
 # digitalocean_cloud_firewall_test_size_id: "s-1vcpu-1gb"
+# digitalocean_cloud_firewall_test_ssh_keys:
+#   - "12345678"
 # digitalocean_cloud_firewall_test_project_name: "existing-project-name"
 # digitalocean_cloud_firewall_test_tag: "ANSIBLE-TEST"

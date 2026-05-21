@@ -23,6 +23,32 @@
     digitalocean_cloud_firewall_test_region_id: "lon1"
     digitalocean_cloud_firewall_test_size_id: "s-1vcpu-1gb"
     digitalocean_cloud_firewall_test_tag: "ANSIBLE-TEST"
+    digitalocean_cloud_firewall_test_ssh_keys_from_env: >-
+      {{
+        lookup('env', 'DIGITAL_OCEAN_SSH_KEYS')
+        | default('', true)
+        | regex_replace('\r?\n', ',')
+        | split(',')
+        | map('trim')
+        | map('regex_replace', '^\[', '')
+        | map('regex_replace', '\]$', '')
+        | map('regex_replace', '^-\\s*', '')
+        | map('trim')
+        | map('regex_replace', '^"', '')
+        | map('regex_replace', '"$', '')
+        | map('regex_replace', "^'", '')
+        | map('regex_replace', "'$", '')
+        | reject('equalto', '')
+        | list
+      }}
+    digitalocean_cloud_firewall_test_effective_ssh_keys: >-
+      {{
+        digitalocean_cloud_firewall_test_ssh_keys_from_env
+        | default(
+            digitalocean_cloud_firewall_test_ssh_keys | default([], true),
+            true
+          )
+      }}
     digitalocean_cloud_firewall_test_project_name_from_env: >-
       {{
         lookup('env', 'DIGITAL_OCEAN_PROJECT_NAME')
@@ -98,6 +124,7 @@
         region: "{{ digitalocean_cloud_firewall_test_region_id }}"
         image: "{{ do_image_id }}"
         size: "{{ digitalocean_cloud_firewall_test_size_id }}"
+        ssh_keys: "{{ digitalocean_cloud_firewall_test_effective_ssh_keys }}"
         tags:
           - "{{ digitalocean_cloud_firewall_test_tag }}"
         timeout: 300

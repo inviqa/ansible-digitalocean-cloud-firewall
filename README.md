@@ -117,9 +117,9 @@ If you install the published role under its current namespace, replace
 
 The current test workflow is documented in [docs/testing.md](docs/testing.md).
 It covers Workspace commands, DigitalOcean live tests, Jenkinsfile lint,
-cleanup, optional DigitalOcean project assignment for test Droplets, the
-Workspace CLI install command, and manual playbook runs through
-`ws ansible playbook`.
+cleanup, optional DigitalOcean project assignment and SSH key injection for
+test Droplets, the Workspace CLI install command, and manual playbook runs
+through `ws ansible playbook`.
 
 ## Development notes
 

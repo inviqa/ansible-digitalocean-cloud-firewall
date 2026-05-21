@@ -27,6 +27,8 @@ All notable changes to this project will be documented in this file.
   publication, Ansible Galaxy token checks, Galaxy status, and Galaxy import.
 - Jenkins live tests assign created DigitalOcean Droplets to the
   `Inviqa Sandbox` project through the top-level pipeline environment.
+- Jenkins live tests inject the shared DigitalOcean public SSH key selector
+  into temporary Droplets to suppress root password emails without using SSH.
 - Namespaced Ansible helper commands under `ws ansible lint`,
   `ws ansible syntax`, `ws ansible playbook`, and
   `ws ansible galaxy <action>` subcommands, with grouped Workspace usage help
