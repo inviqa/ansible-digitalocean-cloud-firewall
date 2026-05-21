@@ -36,11 +36,11 @@ approved and documented.
 | --- | --- |
 | `*.sh` or shell shebang scripts | `shellcheck --enable=all <file>` |
 | `*.yml`, `*.yaml` | `yamllint <file>` |
-| Ansible role, playbook, vars, defaults, metadata, or `tests/**/*.yml` files | `yamllint <file>` and `ansible-lint .` |
+| Ansible role, playbook, vars, defaults, metadata, or `tests/**/*.yml` files | `yamllint <file>` and `ws ansible lint` |
 | `*.md` | `markdownlint` with the global config from `~/AGENTS.md` |
 | `*.py` | `ruff check <file>` |
 | `Jenkinsfile` or Jenkins helper files | `ws lint-jenkinsfile` plus file-type checks |
-| `workspace.yml`, live-test playbooks, or role task flow | `ws ansible syntax` and `ansible-lint .` |
+| `workspace.yml`, live-test playbooks, or role task flow | `ws ansible syntax` and `ws ansible lint` |
 
 If a required linter is unavailable, report that clearly and include the exact
 install command.
@@ -50,6 +50,8 @@ install command.
 - Update `CHANGELOG.md` whenever code, behavior, or documentation changes. If
   an `Unreleased` section exists, use it; otherwise update the current release
   entry only when that release has not been published yet.
+- Concrete release headings must use a plain `YYYY-MM-DD` date with no
+  suffixes.
 - Update the root `README.md` whenever repository documentation is added,
   renamed, moved, or deleted. Keep its table of contents and maintainer,
   support, publication, and installation details aligned.
@@ -102,7 +104,7 @@ install command.
 ```text
 shellcheck --enable=all tests/lint_jenkinsfile.sh
 yamllint workspace.yml workspace.override.yml.example tests/playbook.yml tests/playbook_cleanup.yml
-ansible-lint .
+ws ansible lint
 markdownlint -c ~/.markdownlint.json AGENTS.md README.md CHANGELOG.md docs/*.md tests/README.md
 ws ansible syntax
 ws lint-jenkinsfile

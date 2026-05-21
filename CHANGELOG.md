@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Kept Workspace `ansible-lint` offline through the existing `ws console`
+  boundary so container validation uses image-installed collections instead of
+  host-generated role cache links.
+- Documented that local Ansible linting should use `ws ansible lint` and that
+  concrete changelog release headings must use plain `YYYY-MM-DD` dates.
 - Initial `digitalocean_cloud_firewall` role for attaching or detaching one
   existing DigitalOcean Droplet to an existing DigitalOcean Cloud Firewall.
 - Firewall lookup by explicit firewall ID or by firewall name, with validation
