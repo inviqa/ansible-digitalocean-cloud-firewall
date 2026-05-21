@@ -20,7 +20,6 @@
     return_content: true
     timeout: "{{ digitalocean_cloud_firewall_timeout }}"
   delegate_to: localhost
-  register: digitalocean_cloud_firewall_attach_response
   changed_when: true
   no_log: true
   when:
@@ -50,7 +49,6 @@
     return_content: true
     timeout: "{{ digitalocean_cloud_firewall_timeout }}"
   delegate_to: localhost
-  register: digitalocean_cloud_firewall_detach_response
   changed_when: true
   no_log: true
   when:

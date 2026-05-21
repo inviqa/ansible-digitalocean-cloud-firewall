@@ -6,31 +6,27 @@
   register: digitalocean_cloud_firewall_test_firewalls
   no_log: true
 
-- name: Collect matching test Cloud Firewall names
+- name: Collect matching test Cloud Firewalls
   ansible.builtin.set_fact:
-    digitalocean_cloud_firewall_test_firewall_names_to_delete: >-
+    digitalocean_cloud_firewall_test_firewalls_to_delete: >-
       {{
-        digitalocean_cloud_firewall_test_firewall_names_to_delete | default([])
-        + [item.name]
+        digitalocean_cloud_firewall_test_firewalls_to_delete | default([])
+        + [{
+          'id': item.id,
+          'name': item.name,
+          'droplet_ids': (
+            item.droplet_ids
+            | default([])
+            | map('string')
+            | list
+          ),
+        }]
       }}
   loop: >-
     {{ digitalocean_cloud_firewall_test_firewalls.firewalls | default([]) }}
   when:
     - item.name in digitalocean_cloud_firewall_test_resource_names
   delegate_to: localhost
-  no_log: true
-
-- name: Delete matching test Cloud Firewalls
-  digitalocean.cloud.firewall:
-    token: "{{ digitalocean_cloud_firewall_test_effective_api_token }}"
-    name: "{{ item }}"
-    state: absent
-    timeout: 60
-  delegate_to: localhost
-  loop: >-
-    {{
-      digitalocean_cloud_firewall_test_firewall_names_to_delete | default([])
-    }}
   no_log: true
 
 - name: Retrieve test Droplets
@@ -62,6 +58,48 @@
   delegate_to: localhost
   no_log: true
 
+- name: Collect attached test Droplet and Cloud Firewall pairs
+  ansible.builtin.set_fact:
+    digitalocean_cloud_firewall_test_attached_pairs: >-
+      {{
+        digitalocean_cloud_firewall_test_attached_pairs | default([])
+        + [item]
+      }}
+  loop: >-
+    {{
+      (digitalocean_cloud_firewall_test_firewalls_to_delete | default([]))
+      | product(digitalocean_cloud_firewall_test_droplets_to_delete | default([]))
+      | list
+    }}
+  when:
+    - item.1.id | string in item.0.droplet_ids
+  delegate_to: localhost
+  no_log: true
+
+- name: Detach matching test Droplets from Cloud Firewalls
+  ansible.builtin.include_role:
+    name: digitalocean_cloud_firewall
+  vars:
+    digitalocean_cloud_firewall_api_token: >-
+      {{ digitalocean_cloud_firewall_test_effective_api_token }}
+    digitalocean_cloud_firewall_droplet_id: "{{ item.1.id }}"
+    digitalocean_cloud_firewall_id: "{{ item.0.id }}"
+    digitalocean_cloud_firewall_state: absent
+  loop: >-
+    {{ digitalocean_cloud_firewall_test_attached_pairs | default([]) }}
+  no_log: true
+
+- name: Delete matching test Cloud Firewalls
+  digitalocean.cloud.firewall:
+    token: "{{ digitalocean_cloud_firewall_test_effective_api_token }}"
+    name: "{{ item.name }}"
+    state: absent
+    timeout: 60
+  delegate_to: localhost
+  loop: >-
+    {{ digitalocean_cloud_firewall_test_firewalls_to_delete | default([]) }}
+  no_log: true
+
 - name: Delete matching test Droplets
   digitalocean.cloud.droplet:
     token: "{{ digitalocean_cloud_firewall_test_effective_api_token }}"
@@ -71,7 +109,6 @@
     state: absent
     timeout: 60
   delegate_to: localhost
-  register: digitalocean_cloud_firewall_test_droplet_delete
   loop: >-
     {{ digitalocean_cloud_firewall_test_droplets_to_delete | default([]) }}
   no_log: true

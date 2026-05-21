@@ -1,13 +1,11 @@
 ---
-# Copy this file to tests/test_variables.yml before running the integration
-# tests.
+# Copy this file to tests/test_variables.yml before running live tests.
+# tests/test_variables.yml is gitignored.
 
-# Optional local secret override. tests/test_variables.yml is gitignored, so it
-# can safely carry your local DigitalOcean token for this harness.
 digitalocean_cloud_firewall_test_api_token: "your_digitalocean_token_here"
 
 # Optional overrides:
 # digitalocean_cloud_firewall_test_region_id: "lon1"
 # digitalocean_cloud_firewall_test_size_id: "s-1vcpu-1gb"
+# digitalocean_cloud_firewall_test_project_name: "example-project"
 # digitalocean_cloud_firewall_test_tag: "ANSIBLE-TEST"
-# digitalocean_cloud_firewall_test_ssh_keys: []

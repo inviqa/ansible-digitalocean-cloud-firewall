@@ -22,57 +22,30 @@
       }}
     digitalocean_cloud_firewall_test_region_id: "lon1"
     digitalocean_cloud_firewall_test_size_id: "s-1vcpu-1gb"
-    digitalocean_cloud_firewall_test_ssh_keys: []
     digitalocean_cloud_firewall_test_tag: "ANSIBLE-TEST"
+    digitalocean_cloud_firewall_test_project_name_from_env: >-
+      {{
+        lookup('env', 'DIGITAL_OCEAN_PROJECT_NAME')
+        | default('', true)
+      }}
+    digitalocean_cloud_firewall_test_effective_project_name: >-
+      {{
+        digitalocean_cloud_firewall_test_project_name_from_env
+        | default(
+            digitalocean_cloud_firewall_test_project_name | default('', true),
+            true
+          )
+      }}
     digitalocean_cloud_firewall_test_resource_name: >-
       ansible-digitalocean-cloud-firewall-{{ inventory_hostname }}
   pre_tasks:
-    - name: Check whether local test overrides exist
-      ansible.builtin.stat:
-        path: "{{ playbook_dir }}/test_variables.yml"
-      register: digitalocean_cloud_firewall_test_variables_file
-
     - name: Load local test overrides
-      ansible.builtin.include_vars:
-        file: "{{ playbook_dir }}/test_variables.yml"
-      when: digitalocean_cloud_firewall_test_variables_file.stat.exists
+      ansible.builtin.include_tasks: tasks/load_local_test_overrides.yml
 
-    - name: Check whether a DigitalOcean API token is available for tests
-      ansible.builtin.assert:
-        that:
-          - digitalocean_cloud_firewall_test_effective_api_token | length > 0
-        fail_msg: >-
-          Set digitalocean_cloud_firewall_test_api_token in
-          tests/test_variables.yml or export DIGITAL_OCEAN_API_TOKEN or
-          DO_OAUTH_TOKEN before running the live test harness.
-
-    - name: Validate the DigitalOcean API token for tests
-      ansible.builtin.uri:
-        url: https://api.digitalocean.com/v2/account
-        headers:
-          Content-Type: application/json
-          Authorization: >-
-            Bearer {{ digitalocean_cloud_firewall_test_effective_api_token }}
-        method: GET
-        status_code:
-          - 200
-          - 401
-        return_content: true
-        timeout: 60
-      delegate_to: localhost
-      register: digitalocean_cloud_firewall_test_account_auth_check
-      no_log: true
-      failed_when: false
-
-    - name: Check whether the DigitalOcean API token can authenticate tests
-      ansible.builtin.assert:
-        that:
-          - digitalocean_cloud_firewall_test_account_auth_check.status == 200
-        fail_msg: >-
-          The configured DigitalOcean token could not authenticate against the
-          DigitalOcean API. Update digitalocean_cloud_firewall_test_api_token
-          in tests/test_variables.yml or export a valid DIGITAL_OCEAN_API_TOKEN
-          / DO_OAUTH_TOKEN before running the live test harness.
+    - name: Validate DigitalOcean test credentials
+      ansible.builtin.include_tasks: tasks/validate_digitalocean_credentials.yml
+      vars:
+        digitalocean_cloud_firewall_test_credential_context: live test harness
   tasks:
     - name: Create test Cloud Firewall
       digitalocean.cloud.firewall:
@@ -125,13 +98,23 @@
         region: "{{ digitalocean_cloud_firewall_test_region_id }}"
         image: "{{ do_image_id }}"
         size: "{{ digitalocean_cloud_firewall_test_size_id }}"
-        ssh_keys: "{{ digitalocean_cloud_firewall_test_ssh_keys }}"
         tags:
           - "{{ digitalocean_cloud_firewall_test_tag }}"
         timeout: 300
       delegate_to: localhost
       register: digitalocean_cloud_firewall_test_droplet_create
       no_log: true
+
+    - name: Assign the test Droplet to the DigitalOcean project
+      digitalocean.cloud.project_resources:
+        state: present
+        project_name: "{{ digitalocean_cloud_firewall_test_effective_project_name }}"
+        token: "{{ digitalocean_cloud_firewall_test_effective_api_token }}"
+        resources:
+          - "do:droplet:{{ digitalocean_cloud_firewall_test_droplet_create.droplet.id }}"
+      delegate_to: localhost
+      no_log: true
+      when: digitalocean_cloud_firewall_test_effective_project_name | length > 0
 
     - name: Store test Droplet ID
       ansible.builtin.set_fact:
@@ -151,56 +134,3 @@
 
     - name: Validate attached test result
       ansible.builtin.include_tasks: tasks/test_tasks.yml
-
-    - name: Detach Droplet from test Cloud Firewall
-      ansible.builtin.include_role:
-        name: digitalocean_cloud_firewall
-      vars:
-        digitalocean_cloud_firewall_api_token: >-
-          {{ digitalocean_cloud_firewall_test_effective_api_token }}
-        digitalocean_cloud_firewall_droplet_id: >-
-          {{ digitalocean_cloud_firewall_test_droplet_id }}
-        digitalocean_cloud_firewall_name: >-
-          {{ digitalocean_cloud_firewall_test_resource_name }}
-        digitalocean_cloud_firewall_state: absent
-
-    - name: Retrieve the test Cloud Firewall after detach
-      ansible.builtin.uri:
-        url: >-
-          {{ digitalocean_cloud_firewall_api_base_url }}/firewalls/{{
-          digitalocean_cloud_firewall_test_firewall.id }}
-        headers:
-          Content-Type: application/json
-          Authorization: >-
-            Bearer {{ digitalocean_cloud_firewall_test_effective_api_token }}
-        method: GET
-        status_code:
-          - 200
-        return_content: true
-        timeout: 60
-      delegate_to: localhost
-      register: digitalocean_cloud_firewall_test_firewall_after_detach
-      no_log: true
-
-    - name: Store post-detach Cloud Firewall membership
-      ansible.builtin.set_fact:
-        digitalocean_cloud_firewall_test_firewall_droplet_ids_after_detach: >-
-          {{
-            digitalocean_cloud_firewall_test_firewall_after_detach.json.firewall.droplet_ids
-            | default([])
-            | map('string')
-            | list
-          }}
-
-    - name: Verify the Droplet is detached from the test Cloud Firewall
-      ansible.builtin.assert:
-        that:
-          - >-
-            digitalocean_cloud_firewall_test_droplet_id
-            | string not in
-            digitalocean_cloud_firewall_test_firewall_droplet_ids_after_detach
-        fail_msg: >-
-          Droplet {{ digitalocean_cloud_firewall_test_droplet_id }} is still
-          attached to Cloud Firewall
-          {{ digitalocean_cloud_firewall_test_firewall.name }} after the detach
-          test.

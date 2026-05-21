@@ -1,154 +1,86 @@
 # AGENTS.md
 
-## Scope
+Follow `~/AGENTS.md` for the canonical user-wide policy. This file applies to
+the repository root and is mandatory for agents editing this role.
 
-This file applies to the repository root.
+## Fast Start
 
-These instructions are mandatory for AI agents editing files in this repository.
+- Read `workspace.yml`, `docs/testing.md`, `docs/jenkins-ci.md`, and
+  `docs/ansible-galaxy-release.md` before changing test, Jenkins, release, or
+  Workspace behavior.
+- Treat `.ansible/` as generated dependency/cache output. Edit role source
+  files in the repository root instead.
+- Keep real credentials only in ignored local files:
+  `workspace.override.yml` for Workspace commands and `tests/test_variables.yml`
+  for direct Ansible runs. Examples and docs must use placeholders only.
+- This Cloud Firewall harness uses only the DigitalOcean API. It does not SSH
+  into test Droplets, so do not add SSH key or SSH agent requirements unless the
+  live test starts making SSH connections.
 
-## Linting Policy (Always Required)
+## Required Checks
 
-Whenever an agent creates, edits, renames, or deletes a file, it must run the
-relevant linter(s) for that file type before finishing.
+Run the relevant checks after each meaningful change set and before handoff.
+Fix findings instead of suppressing them unless an exception is explicitly
+approved and documented.
 
-If multiple file types are changed, run all corresponding linters.
+| Changed files | Required checks |
+| --- | --- |
+| `*.sh` or shell shebang scripts | `shellcheck --enable=all <file>` |
+| `*.yml`, `*.yaml` | `yamllint <file>` |
+| Ansible role, playbook, vars, defaults, metadata, or `tests/**/*.yml` files | `yamllint <file>` and `ansible-lint .` |
+| `*.md` | `markdownlint` with the global config from `~/AGENTS.md` |
+| `*.py` | `ruff check <file>` |
+| `Jenkinsfile` or Jenkins helper files | `ws lint-jenkinsfile` plus file-type checks |
+| `workspace.yml`, live-test playbooks, or role task flow | `ws ansible syntax` and `ansible-lint .` |
 
-## File Type → Required Linter
+If a required linter is unavailable, report that clearly and include the exact
+install command.
 
-### Shell scripts
+## Repository Contracts
 
-Applies to:
-
-- `*.sh`
-- shell scripts with shebangs (`#!/bin/bash`, `#!/usr/bin/env bash`, etc.)
-
-Required:
-
-- `shellcheck --enable=all <file>`
-
-### YAML files
-
-Applies to:
-
-- `*.yml`
-- `*.yaml`
-
-Required:
-
-- `yamllint <file>`
-
-### Ansible YAML files
-
-Applies to:
-
-- `defaults/**/*.yml`
-- `defaults/**/*.yaml`
-- `meta/**/*.yml`
-- `meta/**/*.yaml`
-- `tasks/**/*.yml`
-- `tasks/**/*.yaml`
-- `tests/**/*.yml`
-- `tests/**/*.yaml`
-- any Ansible playbooks, task files, vars files, or metadata in this role repo
-
-Required:
-
-- `ansible-lint <file>` or `ansible-lint .` when role-level context is more
-  representative
-- `yamllint <file>`
-
-Agents must run `ansible-lint` every time an Ansible file is created or
-modified, including files under `tests/`, even if other repo-wide lint commands
-already pass.
-
-### Markdown files
-
-Applies to:
-
-- `*.md`
-
-Required:
-
-- `markdownlint <file>` (or `markdownlint "**/*.md"` for repo-wide validation)
-
-### Python files
-
-Applies to:
-
-- `*.py`
-
-Required:
-
-- `ruff check <file>`
-
-## Execution Rules
-
-1. Lint after each meaningful change set and before final handoff.
-2. Do not skip linting because a change is "small".
-3. Every newly created or modified Ansible file must be validated with
-   `ansible-lint` before finishing the task.
-4. If a linter is unavailable, report it clearly and provide the exact install
-   command.
-5. Prefer targeted linting for changed files, then run broader linting if needed.
-6. Fix lint errors introduced by the change.
-7. Lint issues must be resolved in code/content; do not silence, suppress, or
-   bypass rules unless an explicit, documented exception is approved.
-8. For shell scripts, always run `shellcheck --enable=all` and treat reported
-   findings (including info-level checks) as actionable.
-9. Do not embed Python scripts/snippets inside Bash scripts or Bash command
-   strings. If the task is assigned to Bash, implement it in Bash.
-10. Shell automation must remain compatible with both macOS and Linux Bash.
-   Avoid GNU-only flags or syntax and avoid adding dependencies on non-native
-   shell tools unless the dependency is already an explicit, documented project
-   requirement.
-11. Do not commit user-specific absolute filesystem paths (for example,
-    home-directory paths from local machines). Use repository-relative paths,
-    and use `~` only when a home-relative path is genuinely required.
-12. Do not hand-edit generated or vendored content under `.ansible/`; update the
-    role source files in the repository root and regenerate or reinstall test
-    dependencies when needed.
-13. When renaming externally created live-test resources, keep cleanup tasks
-    compatible with the previous names long enough to remove resources left by
-    interrupted older runs.
-14. When adding cloud quota or allowance preflight checks, run current-resource
-    discovery first and gate only the creation path so idempotent re-runs do
-    not fail when the account is already at quota.
-15. Test rescue blocks must re-raise or fail after logging unless the recovered
-    state is intentionally acceptable and documented in the task.
-
-## Changelog Policy (Always Required)
-
-1. Whenever code or behavior is changed, update `CHANGELOG.md` in the same task.
-2. Whenever documentation is added or updated, mention it in
-   `CHANGELOG.md` in the same task.
-3. If an `Unreleased` section exists, add changes there instead of creating a
-   new dated release.
-4. Do not assign or change a release date for an unreleased section unless
-   requested by the user or the change is part of a release finalization
-   process.
-5. Only create or date a release entry when the release is actually being
-   finalized.
-6. Group entries under clear headings (for example: Added, Changed, Fixed)
-   and keep the wording concise.
-
-## README Update Policy (Always Required)
-
-1. Whenever repository documentation is added, renamed, moved, or deleted,
-   update the root `README.md` in the same task.
-2. Keep the `README.md` table of contents aligned with the current document
-   structure and available repository guidance.
-3. Keep the `README.md` maintainer, support, publication, and installation
-   details aligned with the current repository state.
+- Update `CHANGELOG.md` whenever code, behavior, or documentation changes. If
+  an `Unreleased` section exists, use it; otherwise update the current release
+  entry only when that release has not been published yet.
+- Update the root `README.md` whenever repository documentation is added,
+  renamed, moved, or deleted. Keep its table of contents and maintainer,
+  support, publication, and installation details aligned.
+- Keep shell automation compatible with both macOS and Linux Bash. Do not
+  embed Python snippets inside Bash scripts or Bash command strings, and avoid
+  GNU-only flags unless the dependency is already documented.
+- Do not commit user-specific absolute filesystem paths. Use
+  repository-relative paths, or `~` only when a home-relative path is genuinely
+  required.
+- Keep Jenkins operator choices as per-build controls, not fixed credential
+  environment values. Live-test enablement/target, release version selection,
+  and GitHub/Galaxy publication gates belong in Jenkins parameters or an
+  equivalent explicit input surface.
+- When changing Jenkinsfile publication or live-test behavior, keep
+  `docs/jenkins-ci.md`, `docs/ansible-galaxy-release.md`, and `README.md`
+  aligned with the real split between Jenkins parameters, credential bindings,
+  and Workspace commands.
+- When renaming externally created live-test resources, keep cleanup compatible
+  with previous names long enough to remove resources left by interrupted older
+  runs.
+- Add cloud quota or allowance preflights only after current-resource
+  discovery, and gate only the creation path so idempotent reruns do not fail
+  when the account is already at quota.
+- Test rescue blocks must re-raise or fail after logging unless the recovered
+  state is intentionally acceptable and documented in the task.
+- When parsing provider metadata booleans, compare normalized expected values
+  instead of relying on broad truthiness filters for arbitrary strings.
+- If future work edits host network configuration, replace only the route or
+  setting owned by this role and preserve unrelated existing entries.
+- Use `include_tasks` instead of `import_tasks` when the included task file
+  contains `ansible.builtin.meta` tasks such as `reset_connection` and the
+  include site has a `when` condition.
 
 ## Suggested Commands
 
-- Shell: `shellcheck --enable=all path/to/file.sh`
-- YAML: `yamllint path/to/file.yml`
-- Ansible: `ansible-lint .`
-- Markdown: `markdownlint AGENTS.md README.md CHANGELOG.md`
-- Python: `ruff check path/to/file.py`
-
-## Notes
-
-- This policy is strict by default.
-- Any exception must be explicitly documented in the task output with reason.
+```text
+shellcheck --enable=all tests/lint_jenkinsfile.sh
+yamllint workspace.yml workspace.override.yml.example tests/playbook.yml tests/playbook_cleanup.yml
+ansible-lint .
+markdownlint -c ~/.markdownlint.json AGENTS.md README.md CHANGELOG.md docs/*.md tests/README.md
+ws ansible syntax
+ws lint-jenkinsfile
+```

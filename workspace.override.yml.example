@@ -1,0 +1,8 @@
+---
+# Copy this file to workspace.override.yml and fill local Workspace values.
+# The override file is gitignored.
+
+attribute('test.digitalocean.api_token'): ''
+attribute('test.digitalocean.project_name'): 'example-project'
+attribute('ansible.galaxy.token'): ''
+attribute('github.api_token'): ''
