@@ -18,3 +18,11 @@
       digitalocean_cloud_firewall_droplet_id, and either
       digitalocean_cloud_firewall_id or digitalocean_cloud_firewall_name are
       required.
+
+- name: Validate DigitalOcean Cloud Firewall Droplet ID
+  ansible.builtin.assert:
+    that:
+      - digitalocean_cloud_firewall_droplet_id | string is match('^[0-9]+$')
+    fail_msg: >-
+      digitalocean_cloud_firewall_droplet_id must be a numeric DigitalOcean
+      Droplet ID.
