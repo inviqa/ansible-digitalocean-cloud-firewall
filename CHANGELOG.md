@@ -4,13 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.0] - 2026-05-20
 
-### Added
+### Role
 
-- Kept Workspace `ansible-lint` offline through the existing `ws console`
-  boundary so container validation uses image-installed collections instead of
-  host-generated role cache links.
-- Documented that local Ansible linting should use `ws ansible lint` and that
-  concrete changelog release headings must use plain `YYYY-MM-DD` dates.
 - Initial `digitalocean_cloud_firewall` role for attaching or detaching one
   existing DigitalOcean Droplet to an existing DigitalOcean Cloud Firewall.
 - Firewall lookup by explicit firewall ID or by firewall name, with validation
@@ -27,13 +22,12 @@ All notable changes to this project will be documented in this file.
 - Focused task layout with `tasks/main.yml` as the role orchestrator.
 - Galaxy-ready role metadata for the intended
   `inviqa.digitalocean_cloud_firewall` namespace.
-- Workspace-managed local command surface for role linting, Ansible syntax checks, live
-  DigitalOcean tests, Jenkinsfile linting, GitHub release checks, GitHub
-  publication, Ansible Galaxy token checks, Galaxy status, and Galaxy import.
-- Jenkins live tests assign created DigitalOcean Droplets to the
-  `Inviqa Sandbox` project through the top-level pipeline environment.
-- Jenkins live tests inject the shared DigitalOcean public SSH key selector
-  into temporary Droplets to suppress root password emails without using SSH.
+
+### Workspace and CI
+
+- Added a Workspace-managed command surface for linting, syntax checks,
+  Jenkinsfile validation, live DigitalOcean tests, GitHub release checks and
+  publication, and Ansible Galaxy token, status, and import actions.
 - Namespaced Ansible helper commands under `ws ansible lint`,
   `ws ansible syntax`, `ws ansible playbook`, and
   `ws ansible galaxy <action>` subcommands, with grouped Workspace usage help
@@ -44,12 +38,22 @@ All notable changes to this project will be documented in this file.
 - Containerized Ansible commands keep Ansible home and role cache paths inside
   the container so host-created `.ansible/` cache links do not break Workspace
   validation.
-- Testing and release documentation for `ws ansible playbook`,
-  `ws test-live provision|cleanup|full-cycle`, and nested GitHub/Galaxy release
-  actions.
+- Workspace `ansible-lint` runs offline through the existing `ws console`
+  boundary so container validation uses image-installed collections instead of
+  host-generated role cache links.
 - Docker Compose environment and Dockerized Jenkins Declarative Pipeline lint
   helper for repeatable local `Jenkinsfile` validation without SSH agent
   mounts or unused Jenkins SSH plugins.
+- Jenkins CI runs Workspace linting, syntax checks, release preflight, optional
+  live DigitalOcean tests, optional GitHub release publication, optional
+  Ansible Galaxy import, cleanup, and Slack failure notification.
+- Jenkins live tests assign created DigitalOcean Droplets to the
+  `Inviqa Sandbox` project through the top-level pipeline environment and inject
+  the shared DigitalOcean public SSH key selector only to suppress root password
+  emails.
+
+### Live Tests
+
 - Standalone live DigitalOcean test harness that creates temporary resources,
   optionally assigns the test Droplet to a configured DigitalOcean project,
   validates attach and detach behavior without SSH access, and provides a
@@ -67,16 +71,17 @@ All notable changes to this project will be documented in this file.
 - Targetless Cloud Firewall live-test commands because this harness creates one
   Droplet and one Cloud Firewall instead of a target matrix.
 - Direct live-test subcommand scripts without one-off Bash helper functions.
-- Testing, Jenkins CI, and Ansible Galaxy release documentation under `docs/`,
-  with README links to the maintained workflows.
-- Testing documentation listing the Workspace override attributes used by live
-  tests and release commands.
+
+### Documentation and Release Readiness
+
+- Added testing, Jenkins CI, and Ansible Galaxy release documentation under
+  `docs/`, with README links to the maintained workflows and Workspace override
+  attributes used by live tests and release commands.
+- Documented `ws ansible playbook`, `ws test-live provision|cleanup|full-cycle`,
+  nested GitHub/Galaxy release actions, `ws ansible lint`, and plain
+  `YYYY-MM-DD` concrete release-heading dates.
 - Shorter, phase-oriented Mermaid flowcharts in the testing, Jenkins CI, and
   Ansible Galaxy release documentation.
-- Jenkins CI pipeline that runs Workspace linting, syntax checks, release
-  preflight, optional live DigitalOcean tests, optional GitHub release
-  publication, optional Ansible Galaxy import, cleanup, and Slack failure
-  notification.
 - Repository-specific `AGENTS.md` guidance for linting, documentation,
   changelog, Jenkins, Workspace, and live-test handling.
 - Credential validation keeps non-secret setup guidance visible while keeping

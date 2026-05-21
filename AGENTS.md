@@ -49,9 +49,15 @@ install command.
 
 - Update `CHANGELOG.md` whenever code, behavior, or documentation changes. If
   an `Unreleased` section exists, use it; otherwise update the current release
-  entry only when that release has not been published yet.
+  entry only when that release has not been published yet. During pre-PR
+  release preparation, add or merge remediation notes into the latest concrete
+  release section when no `Unreleased` section exists instead of creating a new
+  `Unreleased` section.
 - Concrete release headings must use a plain `YYYY-MM-DD` date with no
   suffixes.
+- Keep changelog entries grouped and compact. Merge repeated notes about the
+  same command, credential, workflow, or documentation surface so reviewers can
+  scan the release notes without following duplicate back-and-forth entries.
 - Update the root `README.md` whenever repository documentation is added,
   renamed, moved, or deleted. Keep its table of contents and maintainer,
   support, publication, and installation details aligned.
