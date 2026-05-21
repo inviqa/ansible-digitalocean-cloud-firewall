@@ -116,7 +116,7 @@ command('destroy', 'destroy'):
       --timeout 10
 
 command('console %', 'console'):
-  description: "Usage: ws console [command]. Run a command in the Ansible console container."
+  description: "Usage: ws console [simple-command]. Open a shell or run a simple command in the Ansible console container."
   env:
     ANSIBLE_GALAXY_TOKEN: "= @('ansible.galaxy.token') ?: env('ANSIBLE_GALAXY_TOKEN') ?: ''"
     DIGITAL_OCEAN_API_TOKEN: "= @('test.digitalocean.api_token') ?: env('DIGITAL_OCEAN_API_TOKEN') ?: env('DO_OAUTH_TOKEN') ?: ''"
@@ -131,6 +131,13 @@ command('console %', 'console'):
     if [[ -z "${console_command}" ]]; then
       docker_command=(bash)
     else
+      if [[ "${console_command}" == *"'"* ]] ||
+        [[ "${console_command}" == *'"'* ]] ||
+        [[ "${console_command}" == *\\* ]]; then
+        echo "ws console command mode supports simple whitespace-separated commands only." >&2
+        echo "Open 'ws console' for quoted shell commands, or add a dedicated Workspace command." >&2
+        exit 1
+      fi
       docker_exec_args+=(-T)
       read -r -a docker_command <<< "${console_command}"
     fi

@@ -60,7 +60,7 @@ For example:
 
 ```ruby
 attribute('test.digitalocean.api_token'): 'dop_v1_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-attribute('test.digitalocean.project_name'): 'example-project'
+attribute('test.digitalocean.project_name'): ''
 attribute('ansible.galaxy.token'): 'your-galaxy-token'
 attribute('github.api_token'): 'your-github-token'
 ```
@@ -69,6 +69,9 @@ Only `test.digitalocean.api_token` is required for live tests. The release
 attributes are not needed for live testing, but keeping them in the same
 gitignored override file lets the Workspace release commands use the same
 local configuration surface.
+
+Set `test.digitalocean.project_name` only when the temporary test Droplet should
+be assigned to an existing DigitalOcean project.
 
 For direct Ansible runs without Workspace, create the gitignored test variable
 file instead:
@@ -79,7 +82,7 @@ cp tests/test_variables.example.yml tests/test_variables.yml
 
 ```yaml
 digitalocean_cloud_firewall_test_api_token: "dop_v1_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-digitalocean_cloud_firewall_test_project_name: "example-project"
+# digitalocean_cloud_firewall_test_project_name: "existing-project-name"
 ```
 
 For Workspace commands, `workspace.override.yml` values take precedence over
@@ -117,6 +120,10 @@ from `workspace.override.yml` and forward them into the `console` container.
 The live playbooks also load `tests/test_variables.yml` directly, so manual
 Workspace playbook runs and intentional raw Ansible runs both use test
 variables.
+
+Use `ws console` with no argument for an interactive shell when a command needs
+shell quoting. The non-interactive `ws console <command>` form is intentionally
+limited to simple whitespace-separated commands used by Workspace helpers.
 
 Use `ws ansible syntax` for syntax checks and `ws ansible lint` for role linting.
 

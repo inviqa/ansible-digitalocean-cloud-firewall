@@ -10,9 +10,15 @@ the repository root and is mandatory for agents editing this role.
   Workspace behavior.
 - Treat `.ansible/` as generated dependency/cache output. Edit role source
   files in the repository root instead.
+- Keep Workspace container validation isolated from host-generated `.ansible/`
+  cache paths; container Ansible home and role paths should stay inside the
+  container user home unless a generated cache path is intentionally tested.
 - Keep real credentials only in ignored local files:
   `workspace.override.yml` for Workspace commands and `tests/test_variables.yml`
   for direct Ansible runs. Examples and docs must use placeholders only.
+- Keep tracked override examples inert by default. Optional provider resources,
+  such as DigitalOcean project assignment, must stay blank unless the operator
+  explicitly configures a real existing value.
 - This Cloud Firewall harness uses only the DigitalOcean API. It does not SSH
   into test Droplets, so do not add SSH key or SSH agent requirements unless the
   live test starts making SSH connections.
@@ -47,6 +53,9 @@ install command.
 - Keep shell automation compatible with both macOS and Linux Bash. Do not
   embed Python snippets inside Bash scripts or Bash command strings, and avoid
   GNU-only flags unless the dependency is already documented.
+- Do not present Workspace `%` argument wrappers as quote-preserving
+  pass-throughs unless a regression proves quoted arguments survive. Prefer a
+  dedicated command or an interactive shell for shell-quoted command lines.
 - Do not commit user-specific absolute filesystem paths. Use
   repository-relative paths, or `~` only when a home-relative path is genuinely
   required.
@@ -54,6 +63,14 @@ install command.
   environment values. Live-test enablement/target, release version selection,
   and GitHub/Galaxy publication gates belong in Jenkins parameters or an
   equivalent explicit input surface.
+- Keep Jenkins environment and credential requirements declared near the top of
+  `Jenkinsfile` in the top-level `environment` block. This makes the pipeline's
+  required inputs visible as soon as the file is opened and keeps stage blocks
+  small. Prefer this style for new environment values too.
+- Do not move Jenkins environment values into stage-local `withEnv` or
+  `withCredentials` blocks only for style or least-privilege cleanup. Use an
+  exception only when it is strictly necessary, discussed with the maintainer,
+  clearly documented, and stronger than the readability cost.
 - When changing Jenkinsfile publication or live-test behavior, keep
   `docs/jenkins-ci.md`, `docs/ansible-galaxy-release.md`, and `README.md`
   aligned with the real split between Jenkins parameters, credential bindings,
@@ -66,6 +83,9 @@ install command.
   when the account is already at quota.
 - Test rescue blocks must re-raise or fail after logging unless the recovered
   state is intentionally acceptable and documented in the task.
+- For credential validation, keep secret-bearing API calls and variable loads
+  behind `no_log`, but leave non-secret assertion guidance visible so operators
+  can fix missing or invalid local configuration.
 - When parsing provider metadata booleans, compare normalized expected values
   instead of relying on broad truthiness filters for arbitrary strings.
 - If future work edits host network configuration, replace only the route or

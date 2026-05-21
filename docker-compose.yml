@@ -14,9 +14,10 @@ services:
       - "${HOST_DOCKER_GID:-1}"
     working_dir: /app
     environment:
+      ANSIBLE_HOME: /home/ansible/.ansible
       ANSIBLE_COLLECTIONS_PATH: /home/ansible/.ansible/collections:/usr/share/ansible/collections
       ANSIBLE_FORCE_COLOR: "false"
-      ANSIBLE_ROLES_PATH: /app/tests/roles:/app/.ansible/roles:/home/ansible/.ansible/roles
+      ANSIBLE_ROLES_PATH: /app/tests/roles:/home/ansible/.ansible/roles
     volumes:
       - ${HOST_DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
       - .:/app

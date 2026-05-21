@@ -29,8 +29,15 @@ All notable changes to this project will be documented in this file.
   `ws ansible syntax`, `ws ansible playbook`, and
   `ws ansible galaxy <action>` subcommands, with grouped Workspace usage help
   for Ansible, Galaxy, config, GitHub, global, and secret command groups.
+- Non-interactive `ws console <command>` rejects quoted shell snippets instead
+  of corrupting them; use an interactive `ws console` shell or a dedicated
+  Workspace command for shell-quoted commands.
+- Containerized Ansible commands keep Ansible home and role cache paths inside
+  the container so host-created `.ansible/` cache links do not break Workspace
+  validation.
 - Testing and release documentation for `ws ansible playbook`,
-  `ws test-live <phase> <target>`, and nested GitHub/Galaxy release actions.
+  `ws test-live provision|cleanup|full-cycle`, and nested GitHub/Galaxy release
+  actions.
 - Docker Compose environment and Dockerized Jenkins Declarative Pipeline lint
   helper for repeatable local `Jenkinsfile` validation without SSH agent
   mounts or unused Jenkins SSH plugins.
@@ -63,5 +70,7 @@ All notable changes to this project will be documented in this file.
   notification.
 - Repository-specific `AGENTS.md` guidance for linting, documentation,
   changelog, Jenkins, Workspace, and live-test handling.
+- Credential validation keeps non-secret setup guidance visible while keeping
+  token-bearing API checks hidden from logs.
 - Role-local lint configuration for YAML and Ansible validation.
 - MIT license file.
